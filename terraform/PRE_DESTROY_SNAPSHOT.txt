@@ -1,0 +1,43 @@
+CTI SCRAPER - PRE-DESTROY SNAPSHOT
+Generated: $(date)
+================================================================================
+
+VPC:
+  ID: vpc-0650d07889f24eb96
+  CIDR: 10.0.0.0/16
+
+RDS:
+  Endpoint: cti-scraper-dev-db.cigepakoisov.us-east-1.rds.amazonaws.com:5432
+  Instance: cti-scraper-dev-db
+  Engine: PostgreSQL 16.10
+  Class: db.t4g.micro
+  Publicly Accessible: true
+
+S3 Buckets:
+  Content: cti-scraper-dev-content-20251201171854134200000002 (0 objects)
+  Models: cti-scraper-dev-models-20251201171854134700000003 (0 objects)
+  Lambda: cti-scraper-dev-lambda-20251201171854134200000001 (1 object - 53MB)
+
+Lambda:
+  Function: cti-scraper-dev-scraper
+  Runtime: python3.11
+  Last Modified: 2025-12-02T21:39:30.000+0000
+
+IAM Roles:
+  - cti-scraper-dev-app-role
+  - cti-scraper-dev-cost-monitor-role
+  - cti-scraper-dev-ecs-execution-role
+  - cti-scraper-dev-lambda-scraper
+  - cti-scraper-dev-rds-monitoring-role
+
+EventBridge:
+  Rule: cti-scraper-dev-scraper-schedule (rate: 1 hour, ENABLED)
+
+Monitoring:
+  Budget: $100/month
+  SNS Topic: cti-scraper-dev-cost-alerts
+  Dashboard: cti-scraper-dev-cost-monitoring
+
+Resources to Destroy: 63
+
+================================================================================

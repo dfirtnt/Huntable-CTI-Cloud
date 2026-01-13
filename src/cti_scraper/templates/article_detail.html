@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ article.title }} - CTI Scraper</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .selected-text { background-color: yellow; }
+        .annotation-mode { cursor: crosshair; user-select: text; }
+        .huntable-badge { background-color: #28a745; color: white; }
+        .not-huntable-badge { background-color: #dc3545; color: white; }
+        #article-content { white-space: pre-wrap; line-height: 1.8; }
+        .sticky-panel { position: sticky; top: 20px; }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">{{ article.title }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">
+                            <strong>Published:</strong> {{ article.published_at }}
+                            | <strong>Hunt Score:</strong>
+                            <span class="badge {% if article.threat_hunting_score >= 50 %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ article.threat_hunting_score }}
+                            </span>
+                            | <strong>Source:</strong> {{ article.source_id }}
+                        </p>
+
+                        <div id="article-content" class="mt-4 p-3 bg-white border rounded">{{ article.content }}</div>
+
+                        <button id="annotate-btn" class="btn btn-primary mt-3">
+                            <i class="bi bi-pen"></i> Start Annotating
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <!-- Annotation Panel -->
+                <div class="card sticky-panel" id="annotation-panel" style="display: none;">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Annotation Tool</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="selection-info" class="mb-3" style="display: none;">
+                            <div class="alert alert-info">
+                                <strong>Selected:</strong> <span id="selection-length">0</span> characters
+                                <div class="mt-2" id="length-indicator"></div>
+                            </div>
+                            <textarea id="selected-text" class="form-control" rows="4" readonly></textarea>
+                        </div>
+
+                        <div id="classification-form" style="display: none;">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Classification:</label>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="classification" id="huntable" value="huntable">
+                                    <label class="btn btn-outline-success" for="huntable">Huntable</label>
+
+                                    <input type="radio" class="btn-check" name="classification" id="not-huntable" value="not_huntable">
+                                    <label class="btn btn-outline-danger" for="not-huntable">Not Huntable</label>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button id="save-annotation" class="btn btn-success">
+                                    Save Annotation
+                                </button>
+                                <button id="cancel-annotation" class="btn btn-secondary">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Existing Annotations -->
+                <div class="card mt-3 sticky-panel">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            Annotations (<span id="annotation-count">0</span>)
+                        </h5>
+                    </div>
+                    <div class="card-body" id="annotations-list" style="max-height: 400px; overflow-y: auto;">
+                        <p class="text-muted text-center">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const articleId = {{ article.id }};
+        const apiBaseUrl = window.location.origin;
+        let annotationMode = false;
+        let currentSelection = null;
+
+        // Load existing annotations
+        async function loadAnnotations() {
+            try {
+                const response = await fetch(`${apiBaseUrl}/ml/annotations?article_id=${articleId}`);
+                const data = await response.json();
+
+                document.getElementById('annotation-count').textContent = data.length;
+
+                const listEl = document.getElementById('annotations-list');
+
+                if (data.length === 0) {
+                    listEl.innerHTML = '<p class="text-muted text-center">No annotations yet</p>';
+                    return;
+                }
+
+                listEl.innerHTML = data.map(ann => `
+                    <div class="mb-2 p-2 border rounded">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge ${ann.annotation_type === 'huntable' ? 'huntable-badge' : 'not-huntable-badge'}">
+                                ${ann.annotation_type}
+                            </span>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteAnnotation(${ann.id})">
+                                Delete
+                            </button>
+                        </div>
+                        <p class="mb-0 mt-2 small text-muted">${ann.selected_text.substring(0, 80)}...</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading annotations:', error);
+                document.getElementById('annotations-list').innerHTML = '<p class="text-danger">Error loading annotations</p>';
+            }
+        }
+
+        // Toggle annotation mode
+        document.getElementById('annotate-btn').addEventListener('click', () => {
+            annotationMode = !annotationMode;
+            document.getElementById('annotation-panel').style.display = annotationMode ? 'block' : 'none';
+            document.getElementById('article-content').classList.toggle('annotation-mode', annotationMode);
+
+            const btn = document.getElementById('annotate-btn');
+            btn.textContent = annotationMode ? 'Stop Annotating' : 'Start Annotating';
+            btn.className = annotationMode ? 'btn btn-danger mt-3' : 'btn btn-primary mt-3';
+
+            if (!annotationMode) {
+                resetForm();
+            }
+        });
+
+        // Handle text selection
+        document.getElementById('article-content').addEventListener('mouseup', () => {
+            if (!annotationMode) return;
+
+            const selection = window.getSelection();
+            const selectedText = selection.toString().trim();
+
+            if (selectedText.length === 0) return;
+
+            const length = selectedText.length;
+
+            currentSelection = {
+                text: selectedText,
+                start: getSelectionStart(selection),
+                end: getSelectionEnd(selection)
+            };
+
+            document.getElementById('selection-info').style.display = 'block';
+            document.getElementById('classification-form').style.display = 'block';
+            document.getElementById('selected-text').value = selectedText;
+            document.getElementById('selection-length').textContent = length;
+
+            // Update length indicator
+            const indicator = document.getElementById('length-indicator');
+            if (length >= 950 && length <= 1050) {
+                indicator.innerHTML = '<span class="badge bg-success">Perfect length!</span>';
+            } else if (length < 950) {
+                indicator.innerHTML = `<span class="badge bg-warning">Too short (need ${950 - length} more characters)</span>`;
+            } else {
+                indicator.innerHTML = `<span class="badge bg-warning">Too long (${length - 1050} characters over)</span>`;
+            }
+        });
+
+        // Save annotation
+        document.getElementById('save-annotation').addEventListener('click', async () => {
+            const classification = document.querySelector('input[name="classification"]:checked');
+            if (!classification || !currentSelection) {
+                alert('Please select text and choose a classification');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/ml/annotations`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        article_id: articleId,
+                        selected_text: currentSelection.text,
+                        annotation_type: classification.value,
+                        start_position: currentSelection.start,
+                        end_position: currentSelection.end
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Annotation saved successfully!');
+                    loadAnnotations();
+                    resetForm();
+                } else {
+                    alert('Error: ' + (result.detail || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error saving annotation: ' + error.message);
+            }
+        });
+
+        // Cancel annotation
+        document.getElementById('cancel-annotation').addEventListener('click', resetForm);
+
+        // Delete annotation
+        async function deleteAnnotation(annotationId) {
+            if (!confirm('Delete this annotation?')) return;
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/ml/annotations/${annotationId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    loadAnnotations();
+                } else {
+                    alert('Error deleting annotation');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('selection-info').style.display = 'none';
+            document.getElementById('classification-form').style.display = 'none';
+            document.getElementById('selected-text').value = '';
+            document.querySelectorAll('input[name="classification"]').forEach(el => el.checked = false);
+            currentSelection = null;
+            window.getSelection().removeAllRanges();
+        }
+
+        function getSelectionStart(selection) {
+            const range = selection.getRangeAt(0);
+            const preRange = range.cloneRange();
+            preRange.selectNodeContents(document.getElementById('article-content'));
+            preRange.setEnd(range.startContainer, range.startOffset);
+            return preRange.toString().length;
+        }
+
+        function getSelectionEnd(selection) {
+            return getSelectionStart(selection) + selection.toString().length;
+        }
+
+        // Initial load
+        loadAnnotations();
+    </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(terraform apply:*)",
+      "Bash(aws lambda invoke:*)",
+      "Bash(MSYS_NO_PATHCONV=1 aws logs describe-log-streams:*)",
+      "Bash(MSYS_NO_PATHCONV=1 aws logs get-log-events:*)",
+      "Bash(aws ec2 describe-security-groups:*)",
+      "Bash(aws:*)",
+      "Bash(nslookup:*)",
+      "Bash(MSYS_NO_PATHCONV=1 aws logs describe-log-groups:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

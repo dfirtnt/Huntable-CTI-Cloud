@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sources - CTI Scraper</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 32px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #f0f6fc;
+        }
+
+        .subtitle {
+            color: #8b949e;
+            font-size: 14px;
+        }
+
+        .nav {
+            margin-bottom: 24px;
+            border-bottom: 1px solid #21262d;
+            padding-bottom: 8px;
+        }
+
+        .nav a {
+            color: #58a6ff;
+            text-decoration: none;
+            margin-right: 24px;
+            padding-bottom: 8px;
+            display: inline-block;
+        }
+
+        .nav a:hover {
+            color: #79c0ff;
+        }
+
+        .nav a.active {
+            border-bottom: 2px solid #f78166;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-box {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: #f0f6fc;
+            margin-bottom: 4px;
+        }
+
+        .stat-value.good {
+            color: #3fb950;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #8b949e;
+            text-transform: uppercase;
+        }
+
+        .sources-section {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f0f6fc;
+        }
+
+        .sources-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .sources-table th {
+            text-align: left;
+            padding: 12px 24px;
+            border-bottom: 1px solid #30363d;
+            color: #8b949e;
+            font-weight: 500;
+            font-size: 12px;
+            text-transform: uppercase;
+            background: #0d1117;
+        }
+
+        .sources-table td {
+            padding: 16px 24px;
+            border-bottom: 1px solid #21262d;
+        }
+
+        .sources-table tr:hover {
+            background: #0d1117;
+        }
+
+        .source-name {
+            font-weight: 500;
+            color: #f0f6fc;
+            margin-bottom: 4px;
+        }
+
+        .source-url {
+            font-size: 12px;
+            color: #58a6ff;
+            text-decoration: none;
+        }
+
+        .source-url:hover {
+            text-decoration: underline;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.active {
+            background: #1a7f37;
+            color: #aff5b4;
+        }
+
+        .badge.inactive {
+            background: #8b949e;
+            color: #161b22;
+        }
+
+        .badge.healthy {
+            background: #1a7f37;
+            color: #aff5b4;
+        }
+
+        .badge.issues {
+            background: #a40e26;
+            color: #ffc1cc;
+        }
+
+        .badge.unknown {
+            background: #6e7681;
+            color: #c9d1d9;
+        }
+
+        .badge.rss {
+            background: #6e40c9;
+            color: #dcbdfb;
+        }
+
+        .badge.web {
+            background: #0969da;
+            color: #a5d6ff;
+        }
+
+        .stats-text {
+            font-size: 13px;
+            color: #8b949e;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #8b949e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📡 Sources</h1>
+            <p class="subtitle">Threat intelligence source configuration and health monitoring</p>
+        </header>
+
+        <nav class="nav">
+            <a href="/ui/">Dashboard</a>
+            <a href="/ui/articles">Articles</a>
+            <a href="/ui/sources" class="active">Sources</a>
+            <a href="/costs/dashboard">Cost Monitor</a>
+        </nav>
+
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="stat-value">{{ total_sources }}</div>
+                <div class="stat-label">Total Sources</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value good">{{ active_sources }}</div>
+                <div class="stat-label">Active Sources</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value {% if healthy_sources == active_sources %}good{% endif %}">{{ healthy_sources }}</div>
+                <div class="stat-label">Healthy Sources</div>
+            </div>
+        </div>
+
+        <div class="sources-section">
+            <div class="section-header">
+                <h2 class="section-title">Configured Sources</h2>
+            </div>
+
+            <table class="sources-table">
+                <thead>
+                    <tr>
+                        <th>Source</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Health</th>
+                        <th style="text-align: right;">Articles</th>
+                        <th>Last Check</th>
+                        <th>Check Frequency</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for source in sources %}
+                    <tr>
+                        <td>
+                            <div class="source-name">{{ source.name }}</div>
+                            <a href="{{ source.url }}" target="_blank" class="source-url">{{ source.url }}</a>
+                        </td>
+                        <td>
+                            {% if source.has_rss %}
+                            <span class="badge rss">RSS</span>
+                            {% else %}
+                            <span class="badge web">Web</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if source.active %}
+                            <span class="badge active">Active</span>
+                            {% else %}
+                            <span class="badge inactive">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if source.health_status == 'healthy' %}
+                            <span class="badge healthy">✓ Healthy</span>
+                            {% elif source.health_status == 'issues' %}
+                            <span class="badge issues">{{ source.consecutive_failures }} failures</span>
+                            {% else %}
+                            <span class="badge unknown">Unknown</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: right;">
+                            <span class="stats-text">{{ source.total_articles }}</span>
+                        </td>
+                        <td>
+                            {% if source.last_check %}
+                            <span class="timestamp">{{ source.last_check.strftime('%Y-%m-%d %H:%M') }}</span>
+                            {% else %}
+                            <span class="timestamp">Never</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="stats-text">{{ (source.check_frequency / 3600) | round(1) }}h</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
