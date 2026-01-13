@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Articles - CTI Scraper</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 32px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #f0f6fc;
+        }
+
+        .subtitle {
+            color: #8b949e;
+            font-size: 14px;
+        }
+
+        .nav {
+            margin-bottom: 24px;
+            border-bottom: 1px solid #21262d;
+            padding-bottom: 8px;
+        }
+
+        .nav a {
+            color: #58a6ff;
+            text-decoration: none;
+            margin-right: 24px;
+            padding-bottom: 8px;
+            display: inline-block;
+        }
+
+        .nav a:hover {
+            color: #79c0ff;
+        }
+
+        .nav a.active {
+            border-bottom: 2px solid #f78166;
+        }
+
+        .filters {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 12px;
+            color: #8b949e;
+            margin-bottom: 4px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #58a6ff;
+        }
+
+        .btn {
+            background: #238636;
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: #2ea043;
+        }
+
+        .btn-secondary {
+            background: #21262d;
+            color: #c9d1d9;
+        }
+
+        .btn-secondary:hover {
+            background: #30363d;
+        }
+
+        .articles-section {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 0;
+            margin-bottom: 24px;
+        }
+
+        .section-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f0f6fc;
+        }
+
+        .article-count {
+            color: #8b949e;
+            font-size: 14px;
+        }
+
+        .articles-list {
+            list-style: none;
+        }
+
+        .article-item {
+            padding: 20px 24px;
+            border-bottom: 1px solid #21262d;
+        }
+
+        .article-item:last-child {
+            border-bottom: none;
+        }
+
+        .article-item:hover {
+            background: #0d1117;
+        }
+
+        .article-title {
+            color: #58a6ff;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .article-title:hover {
+            text-decoration: underline;
+        }
+
+        .article-summary {
+            color: #8b949e;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .article-meta {
+            font-size: 12px;
+            color: #8b949e;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .hunt-score {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .hunt-score.high {
+            background: #1a7f37;
+            color: #aff5b4;
+        }
+
+        .hunt-score.medium {
+            background: #9e6a03;
+            color: #f8e3a1;
+        }
+
+        .hunt-score.low {
+            background: #8b949e;
+            color: #161b22;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 20px;
+        }
+
+        .pagination a {
+            padding: 6px 12px;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #58a6ff;
+            text-decoration: none;
+            background: #0d1117;
+        }
+
+        .pagination a:hover {
+            background: #161b22;
+            border-color: #58a6ff;
+        }
+
+        .pagination a.active {
+            background: #58a6ff;
+            color: #0d1117;
+            border-color: #58a6ff;
+        }
+
+        .pagination a.disabled {
+            color: #484f58;
+            pointer-events: none;
+        }
+
+        .empty-state {
+            padding: 60px 24px;
+            text-align: center;
+            color: #8b949e;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📰 Articles</h1>
+            <p class="subtitle">Browse and search threat intelligence articles</p>
+        </header>
+
+        <nav class="nav">
+            <a href="/ui/">Dashboard</a>
+            <a href="/ui/articles" class="active">Articles</a>
+            <a href="/ui/sources">Sources</a>
+            <a href="/costs/dashboard">Cost Monitor</a>
+        </nav>
+
+        <div class="filters">
+            <form method="get" action="/ui/articles">
+                <div class="filter-grid">
+                    <div class="form-group">
+                        <label for="search">Search</label>
+                        <input type="text" id="search" name="search" placeholder="Search title or summary..." value="{{ search or '' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="source">Source</label>
+                        <select id="source" name="source">
+                            <option value="">All Sources</option>
+                            {% for src in available_sources %}
+                            <option value="{{ src.identifier }}" {% if source == src.identifier %}selected{% endif %}>
+                                {{ src.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="min_hunt_score">Min Hunt Score</label>
+                        <input type="number" id="min_hunt_score" name="min_hunt_score" min="0" max="100" step="1" placeholder="e.g., 50" value="{{ min_hunt_score or '' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sort_by">Sort By</label>
+                        <select id="sort_by" name="sort_by">
+                            <option value="discovered_at" {% if sort_by == 'discovered_at' %}selected{% endif %}>Discovered (Newest)</option>
+                            <option value="published_at" {% if sort_by == 'published_at' %}selected{% endif %}>Published (Newest)</option>
+                            <option value="hunt_score" {% if sort_by == 'hunt_score' %}selected{% endif %}>Hunt Score (Highest)</option>
+                            <option value="word_count" {% if sort_by == 'word_count' %}selected{% endif %}>Word Count</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Apply Filters</button>
+                <a href="/ui/articles" class="btn btn-secondary">Clear</a>
+            </form>
+        </div>
+
+        <div class="articles-section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Articles</h2>
+                    <p class="article-count">{{ total_articles }} article(s) found</p>
+                </div>
+            </div>
+
+            {% if articles %}
+            <ul class="articles-list">
+                {% for article in articles %}
+                <li class="article-item">
+                    <a href="/ui/articles/{{ article.id }}" class="article-title">{{ article.title }}</a>
+                    {% if article.summary %}
+                    <div class="article-summary">{{ article.summary }}</div>
+                    {% endif %}
+                    <div class="article-meta">
+                        <span class="meta-item">{{ article.source_name }}</span>
+                        {% if article.published_at %}
+                        <span class="meta-item">📅 {{ article.published_at.strftime('%Y-%m-%d') }}</span>
+                        {% endif %}
+                        <span class="meta-item">📝 {{ article.word_count }} words</span>
+                        {% if article.hunt_score is not none %}
+                        <span class="hunt-score {% if article.hunt_score >= 70 %}high{% elif article.hunt_score >= 40 %}medium{% else %}low{% endif %}">
+                            Hunt: {{ "%.1f"|format(article.hunt_score) }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+
+            {% if total_pages > 1 %}
+            <div class="pagination">
+                {% if page > 1 %}
+                <a href="?page={{ page - 1 }}{% if source %}&source={{ source }}{% endif %}{% if min_hunt_score %}&min_hunt_score={{ min_hunt_score }}{% endif %}{% if search %}&search={{ search }}{% endif %}{% if sort_by != 'discovered_at' %}&sort_by={{ sort_by }}{% endif %}">← Previous</a>
+                {% else %}
+                <a class="disabled">← Previous</a>
+                {% endif %}
+
+                <span style="color: #8b949e;">Page {{ page }} of {{ total_pages }}</span>
+
+                {% if page < total_pages %}
+                <a href="?page={{ page + 1 }}{% if source %}&source={{ source }}{% endif %}{% if min_hunt_score %}&min_hunt_score={{ min_hunt_score }}{% endif %}{% if search %}&search={{ search }}{% endif %}{% if sort_by != 'discovered_at' %}&sort_by={{ sort_by }}{% endif %}">Next →</a>
+                {% else %}
+                <a class="disabled">Next →</a>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">🔍</div>
+                <div style="font-size: 18px; margin-bottom: 8px;">No articles found</div>
+                <div>Try adjusting your filters or search criteria</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

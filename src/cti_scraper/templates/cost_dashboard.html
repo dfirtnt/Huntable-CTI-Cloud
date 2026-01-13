@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cost Dashboard - CTI Scraper</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #f0f6fc;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #8b949e;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #8b949e;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        .metric {
+            font-size: 36px;
+            font-weight: 700;
+            color: #f0f6fc;
+            margin-bottom: 8px;
+        }
+
+        .metric-sub {
+            font-size: 14px;
+            color: #8b949e;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #21262d;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.green {
+            background: #238636;
+        }
+
+        .progress-fill.yellow {
+            background: #d29922;
+        }
+
+        .progress-fill.orange {
+            background: #da3633;
+        }
+
+        .progress-fill.red {
+            background: #f85149;
+        }
+
+        .service-list {
+            list-style: none;
+        }
+
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #21262d;
+        }
+
+        .service-item:last-child {
+            border-bottom: none;
+        }
+
+        .service-name {
+            color: #c9d1d9;
+            font-size: 14px;
+        }
+
+        .service-cost {
+            color: #f0f6fc;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .alert-box {
+            background: #1c2128;
+            border-left: 4px solid;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        .alert-box.info {
+            border-color: #1f6feb;
+        }
+
+        .alert-box.warning {
+            border-color: #d29922;
+        }
+
+        .alert-box.critical {
+            border-color: #da3633;
+        }
+
+        .alert-box.emergency {
+            border-color: #f85149;
+            background: #2d1517;
+        }
+
+        .alert-severity {
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .alert-message {
+            font-size: 14px;
+        }
+
+        .no-alerts {
+            text-align: center;
+            color: #8b949e;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        .refresh-btn {
+            background: #238636;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .refresh-btn:hover {
+            background: #2ea043;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .badge.green {
+            background: #1a7f37;
+            color: #fff;
+        }
+
+        .badge.yellow {
+            background: #9e6a03;
+            color: #fff;
+        }
+
+        .badge.red {
+            background: #a40e26;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Cost Monitoring Dashboard</h1>
+            <p class="subtitle">Last updated: {{ timestamp }}</p>
+        </header>
+
+        {% if summary.alerts %}
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-title">Budget Alerts</div>
+            {% for alert in summary.alerts %}
+            <div class="alert-box {{ alert.severity|lower }}">
+                <div class="alert-severity">{{ alert.severity }}</div>
+                <div class="alert-message">{{ alert.message }}</div>
+                <div class="metric-sub" style="margin-top: 5px;">
+                    Current: ${{ "%.2f"|format(alert.current) }} / Threshold: ${{ "%.2f"|format(alert.threshold) }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">Month-to-Date Cost</div>
+                <div class="metric">${{ "%.2f"|format(summary.month_to_date.amount|default(0)) }}</div>
+                <div class="metric-sub">of $100.00 budget</div>
+                {% set percent = summary.budget.used_percent|default(0) %}
+                <div class="progress-bar">
+                    <div class="progress-fill
+                        {% if percent < 50 %}green
+                        {% elif percent < 75 %}yellow
+                        {% elif percent < 90 %}orange
+                        {% else %}red{% endif %}"
+                        style="width: {{ percent }}%">
+                    </div>
+                </div>
+                <div class="metric-sub">{{ "%.1f"|format(percent) }}% used</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Daily Average</div>
+                <div class="metric">${{ "%.2f"|format(summary.projected.daily_average|default(0)) }}</div>
+                <div class="metric-sub">{{ summary.projected.days_elapsed|default(0) }} days elapsed</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Projected End-of-Month</div>
+                <div class="metric">${{ "%.2f"|format(summary.projected.projected_eom|default(0)) }}</div>
+                {% set projected = summary.projected.projected_eom|default(0) %}
+                {% if projected > 100 %}
+                    <span class="badge red">OVER BUDGET</span>
+                {% elif projected > 90 %}
+                    <span class="badge yellow">WARNING</span>
+                {% else %}
+                    <span class="badge green">ON TRACK</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">Bedrock API Costs</div>
+                <div class="metric">${{ "%.2f"|format(summary.bedrock.total_cost|default(0)) }}</div>
+                <div class="metric-sub">Monthly budget: ${{ "%.2f"|format(summary.bedrock.monthly_budget|default(45)) }}</div>
+                {% set bedrock_percent = summary.bedrock.budget_used_percent|default(0) %}
+                <div class="progress-bar">
+                    <div class="progress-fill
+                        {% if bedrock_percent < 50 %}green
+                        {% elif bedrock_percent < 75 %}yellow
+                        {% elif bedrock_percent < 90 %}orange
+                        {% else %}red{% endif %}"
+                        style="width: {{ bedrock_percent }}%">
+                    </div>
+                </div>
+                <div class="metric-sub">{{ "%.1f"|format(bedrock_percent) }}% of Bedrock budget used</div>
+            </div>
+
+            <div class="card" style="grid-column: span 2;">
+                <div class="card-title">Costs by Service</div>
+                {% if summary.by_service %}
+                <ul class="service-list">
+                    {% for service, cost in summary.by_service.items() %}
+                    <li class="service-item">
+                        <span class="service-name">{{ service }}</span>
+                        <span class="service-cost">${{ "%.2f"|format(cost) }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="no-alerts">No cost data available yet</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <button class="refresh-btn" onclick="location.reload()">Refresh Data</button>
+    </div>
+</body>
+</html>
