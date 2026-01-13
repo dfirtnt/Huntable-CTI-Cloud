@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
+*.pyo
 *.so
 .Python
 build/
@@ -35,6 +37,8 @@ ENV/
 
 # Claude Code (may contain sensitive data)
 .claude/settings.local.json
+tmpclaude-*-cwd
+tmpclaude-*/
 
 # Environment variables
 .env
@@ -60,6 +64,12 @@ logs/
 # ML Models
 models/*.pkl
 models/*.joblib
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+*.onnx
 outputs/
 
 # Backups
@@ -80,3 +90,8 @@ credentials
 config
 terraform/nul
 nul
+
+# Build artifacts (Lambda packages)
+lambda_*.zip
+*.zip
+!terraform/**/*.zip

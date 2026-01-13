@@ -46,7 +46,10 @@
       "Bash(powershell -Command \"Remove-Item -Path nul -Force\")",
       "Bash(git commit:*)",
       "Bash(test:*)",
-      "Bash(git check-ignore:*)"
+      "Bash(git check-ignore:*)",
+      "Bash(git config:*)",
+      "Bash(powershell -Command \"Get-ChildItem lambda*.zip | Select-Object Name, @{Name=''Size'';Expression={''{0:N2} MB'' -f \\($_Length/1MB\\)}}\")",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": []
