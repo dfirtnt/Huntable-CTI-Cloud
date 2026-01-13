@@ -9,6 +9,7 @@ import asyncio
 import asyncpg
 import json
 import boto3
+import os
 from pathlib import Path
 
 
@@ -16,11 +17,19 @@ async def init_database():
     """Initialize the database with pgvector extension."""
 
     # Retrieve database credentials from AWS Secrets Manager
-    print("Retrieving database credentials from Secrets Manager...")
-    secrets_client = boto3.client("secretsmanager", region_name="us-east-1")
-    secret_value = secrets_client.get_secret_value(
-        SecretId="arn:aws:secretsmanager:us-east-1:735278610086:secret:cti-scraper-dev-db-password-20251125211409099100000006-pOlb8S"
-    )
+    secret_arn = os.environ.get("DATABASE_SECRET_ARN")
+    if not secret_arn:
+        print("[ERROR] DATABASE_SECRET_ARN environment variable not set")
+        print("Please set it to your RDS password secret ARN:")
+        print("  export DATABASE_SECRET_ARN='arn:aws:secretsmanager:REGION:ACCOUNT:secret:...'")
+        return False
+
+    aws_region = os.environ.get("AWS_REGION", "us-east-1")
+    print(f"Retrieving database credentials from Secrets Manager...")
+    print(f"Secret ARN: {secret_arn}")
+
+    secrets_client = boto3.client("secretsmanager", region_name=aws_region)
+    secret_value = secrets_client.get_secret_value(SecretId=secret_arn)
 
     db_config = json.loads(secret_value["SecretString"])
 

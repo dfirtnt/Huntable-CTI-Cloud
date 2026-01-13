@@ -30,10 +30,7 @@
       "Bash(cat:*)",
       "Bash(terraform apply:*)",
       "Bash(terraform output:*)",
-      "Bash(curl -X POST \"https://74f1rjf03b.execute-api.us-east-1.amazonaws.com/dev/invoke\" -H \"x-api-key: wxH35mQFmk6l372oHA2TH2nAzIURdUsO5UkmJNL0\" -H \"Content-Type: application/json\" -d \"{\"\"prompt\"\": \"\"Say hello in one sentence\"\", \"\"max_tokens\"\": 50}\")",
-      "Bash(curl -X POST \"https://74f1rjf03b.execute-api.us-east-1.amazonaws.com/dev/invoke\" -H \"x-api-key: wxH35mQFmk6l372oHA2TH2nAzIURdUsO5UkmJNL0\" -H \"Content-Type: application/json\" -d \"{\"\"prompt\"\": \"\"Say hello in one sentence\"\", \"\"model_id\"\": \"\"us.anthropic.claude-3-5-sonnet-20241022-v2:0\"\", \"\"max_tokens\"\": 50}\")",
       "Bash(terraform:*)",
-      "Bash(curl -s -X POST \"https://74f1rjf03b.execute-api.us-east-1.amazonaws.com/dev/invoke\" -H \"x-api-key: wxH35mQFmk6l372oHA2TH2nAzIURdUsO5UkmJNL0\" -H \"Content-Type: application/json\" -d \"{\"\"prompt\"\": \"\"Say hello in one sentence\"\", \"\"model_id\"\": \"\"us.anthropic.claude-3-5-sonnet-20241022-v2:0\"\", \"\"max_tokens\"\": 50}\")",
       "Bash(python:*)",
       "Bash(\"D:\\Users\\andrew.skatoff\\Huntable.AI.Bedrock\\venv\\Scripts\\python.exe\" check_db.py)",
       "Bash(curl:*)",
@@ -47,7 +44,9 @@
       "Bash(git add:*)",
       "Bash(del nul)",
       "Bash(powershell -Command \"Remove-Item -Path nul -Force\")",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(test:*)",
+      "Bash(git check-ignore:*)"
     ],
     "deny": [],
     "ask": []
