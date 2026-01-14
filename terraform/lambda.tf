@@ -289,13 +289,13 @@ resource "aws_cloudwatch_log_group" "lambda_scraper" {
   tags = var.tags
 }
 
-# EventBridge rule - Run every hour
+# EventBridge rule - Run every 4 hours
 resource "aws_cloudwatch_event_rule" "scraper_schedule" {
   count = var.deploy_lambda ? 1 : 0
 
   name                = "${var.project_name}-${var.environment}-scraper-schedule"
-  description         = "Trigger CTI scraper every hour"
-  schedule_expression = "rate(1 hour)"
+  description         = "Trigger CTI scraper every 4 hours"
+  schedule_expression = "rate(4 hours)"
 
   tags = var.tags
 }
